@@ -22,13 +22,13 @@ The best way to deploy is to clone the repository into the Azure Cloud Shell. Th
 
 1. Open up the Azure Portal and start a new Cloud Shell session
 1. Clone this repository: `git clone git clone https://github.com/microsoft/IgniteTheTour.git`
-1. Change into the `DEV - Building your Applications for the Cloud/DEV10/deployment` directory
+1. Change into the `MIG - Migrating Applications to the Cloud/MIG20/setup` directory
 1. Run the `deploy.sh` script: `./deploy.sh`
 
 The `deploy.sh` script will prompt you for the following information:
 
-* Azure subscription to install all the resources into
-* The resource group name
+* Azure Subscription to install all the resources into
+* An Azure Region in which to create resources (use 'az account list-locations' to get list - use the 'name' property for this script)
 * A prefix to apply the name of the resources created (this helps keep the names unique across all of Azure)
 * A username (to be used for all resources)
 * A password (to be used for all resources)
@@ -43,9 +43,8 @@ Once the install is finished, the script will output important URLs and connecti
 
 This demo uses several expensive Azure resources. You should delete them when you're finished to save on costs.
 
-1. Open the Azure Portal and start a new Cloud Shell session
-1. (Assuming you haven't already done this) Clone this repository: `git clone https://github.com/azure-samples/ignite-tour/lp1s1`
-1. Run the `cleanup.sh` script: `./cleanup/cleanup.sh`
+1. Open the Azure Portal and find the Resource Group that was created as part of this lab.
+1. Delete the Resource Group.
 
 ## Demo Walkthroughs
 
@@ -60,6 +59,7 @@ The services in this demo include:
 * [Azure Cosmos DB](https://docs.microsoft.com/azure/cosmos-db?WT.mc_id=msignitethetour-github-mig20)
 * [Azure CLI](https://docs.microsoft.com/cli/azure?WT.mc_id=msignitethetour-github-mig20)
 * [Azure Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview?WT.mc_id=msignitethetour-github-mig20)
+* Azure Virtual Machines: one for a SQL Server 2012 instance, one for a Mongo DB instance.
 
 Follow these steps:
 

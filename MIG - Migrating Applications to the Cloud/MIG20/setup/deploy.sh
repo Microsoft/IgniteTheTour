@@ -1,14 +1,35 @@
+echo ""
+echo "Welcome to Tailwind Traders Data Migration!!"
+echo ""
+echo "******"
+echo "- Use the Subscription ID for Subscription."
+echo "- Get list of available Azure Regions using 'az account list-locations' - use the 'name' property."
+echo "- You can use an existing Resource Group if you like."
+echo "******"
+echo ""
+
+if [ -d "original" ]
+then
+    echo "Restoring original scripts and configs"
+    cp original/* .
+else
+    echo "Backing up original scripts and configs"
+    mkdir original
+    cp *.sh original
+    cp *.json original
+fi
+
+echo ""
+
 read -p 'Subscription to use: ' SUBSCRIPTION
-read -p 'New resource group name: ' RESOURCE_GROUP_NAME
+read -p 'Azure Region name to use: ' AZURE_REGION
 read -p 'Unique prefix (applied to all resources): ' RESOURCE_PREFIX
 read -p 'Username (applied to all resources): ' USERNAME
 read -sp 'Password (applied to all resources - no exclamation points): ' PASSWORD
 
-echo ""
-
-echo "Welcome to Tailwind Traders Data Migration!!"
 
 REGISTRY_NAME="$RESOURCE_PREFIX"registry
+RESOURCE_GROUP_NAME="$RESOURCE_PREFIX"-datamig-demo
 PRODUCT_SERVICE_NAME="$RESOURCE_PREFIX"product
 INVENTORY_SERVICE_NAME="$RESOURCE_PREFIX"inventory
 INVENTORY_SERVICE_VM_NAME="$INVENTORY_SERVICE_NAME"vm
@@ -25,7 +46,7 @@ PRODUCT_SERVICE_IMAGE='tailwind-product-service:0.1'
 INVENTORY_SERVICE_IMAGE='tailwind-inventory-service:0.1'
 FRONTEND_IMAGE='tailwind-frontend:0.1'
 
-MAIN_REGION=eastus
+MAIN_REGION="$AZURE_REGION"
 
 printf "\n*** Setting the subsription to $SUBSCRIPTION***\n"
 az account set --subscription "$SUBSCRIPTION"
@@ -59,13 +80,13 @@ printf "\n*** Creating the necessary Mongo VM NSGs ***\n"
 az network nsg rule create -n MongoDB --nsg-name "${MONGO_VM_NAME}NSG" -g $RESOURCE_GROUP_NAME --access Allow --direction Inbound --priority 500 --source-address-prefixes AzureCloud --destination-port-ranges 27017
 
 printf "\n*** Cloning into DEV10: Designing Resilient Cloud Applications repository ***\n"
-git clone https://github.com/Azure-Samples/ignite-tour-lp1s1.git
+git clone https://github.com/microsoft/IgniteTheTour.git
 
 printf "\n*** Deploying the App Services and Cosmos DB ***\n"
 
 az group deployment create -g $RESOURCE_GROUP_NAME --template-file appservicedeploy.json --parameters prefix=$RESOURCE_PREFIX location=$MAIN_REGION sqlVMIPAddress=$SQL2012_VM_IP_ADDRESS sqlAdminLogin=$USERNAME sqlAdminPassword=$PASSWORD
 
-cd ignite-tour-lp1s1/deployment
+cd "IgniteTheTour/DEV - Building your Applications for the Cloud/DEV10/deployment"
 
 printf "\n*** Building Product Service image in ACR ***\n"
 az acr build -t $PRODUCT_SERVICE_IMAGE -r $REGISTRY_NAME ../src/product-service
@@ -114,12 +135,11 @@ az webapp config appsettings set -n $FRONTEND_NAME -g $RESOURCE_GROUP_NAME --set
 FRONTEND_BASE_URL="http://$(az webapp show -n $FRONTEND_NAME -g $RESOURCE_GROUP_NAME --query defaultHostName -o tsv)/"
 
 # Finished with app service, go back to top level directory
-cd ..
-cd ..
+cd ..\..\..\..
 
 pwd
 
-rm -rf ignite-tour-lp1s1
+rm -rf IgniteTheTour
 
 printf "\n\n*** Creating the SQL Manage Instance virtual network***\n\n"
 az network vnet create -g $RESOURCE_GROUP_NAME -n $SQL_MI_VNET_NAME \
@@ -191,9 +211,9 @@ printf "Product service url: $PRODUCT_SERVICE_BASE_URL\n"
 # printf "Inventory service url: $INVENTORY_SERVICE_BASE_URL\n"
 printf "Cosmos connection string: $COSMOSDB_CONNECTION_STRING\n"
 printf "MongoDB VM connection string: $MONGODB_CONNECTION_STRING\n"
-printf "SQL VM IP address: $SQL2012_VM_IP_ADDRESS"
-printf "Inventory service VM url: http://${INVENTORY_VM_IP_FQDN}:8080"
-printf "MongoDB VM IP address: $MONGO_IP_ADDRESS"
+printf "SQL VM IP address: $SQL2012_VM_IP_ADDRESS\n"
+printf "Inventory service VM url: http://${INVENTORY_VM_IP_FQDN}:8080\n"
+printf "MongoDB VM IP address: $MONGO_IP_ADDRESS\n"
 printf "\n\n *** All the other info will be found in the portal under the resource group ***\n\n"
 
 printf "\n******************************************************\n"
